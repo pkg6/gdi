@@ -1,5 +1,5 @@
 package gdi
 
-type Object interface {
+type IObject interface {
 	Construct(container IContainer)
 }

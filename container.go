@@ -53,7 +53,7 @@ func (c *Container) Get(id string) any {
 	if !keyExist {
 		panic(fmt.Errorf("identifier %s is not defined", id))
 	}
-	if object, ok := raw.(Object); ok {
+	if object, ok := raw.(IObject); ok {
 		object.Construct(c)
 		return object
 	}
