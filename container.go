@@ -6,8 +6,11 @@ import (
 	"sync"
 )
 
+type HandlerFunc func(container IContainer)
+
 type IContainer interface {
 	Register(provider IServiceProvider) IContainer
+	Handler(handlers ...HandlerFunc) IContainer
 	Set(id string, value any)
 	Get(id string) any
 	Exists(id string) bool
@@ -31,11 +34,17 @@ func New() IContainer {
 		raw:    map[string]any{},
 	}
 }
-
 func (c *Container) Register(provider IServiceProvider) IContainer {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	provider.Register(c)
+	return c
+}
+
+func (c *Container) Handler(handlers ...HandlerFunc) IContainer {
+	for _, handler := range handlers {
+		handler(c)
+	}
 	return c
 }
 
@@ -75,6 +84,7 @@ func (c *Container) Exists(id string) bool {
 	}
 	return false
 }
+
 func (c *Container) Unset(id string) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
@@ -82,6 +92,7 @@ func (c *Container) Unset(id string) {
 	delete(c.values, id)
 	delete(c.raw, id)
 }
+
 func (c *Container) Raw(id string) (any, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
