@@ -5,7 +5,7 @@ import (
 )
 
 func TestSetGet(t *testing.T) {
-	c := NewContainer()
+	c := New()
 	c.Set("foo", "bar")
 	v := c.Get("foo")
 	if v != "bar" {
@@ -22,7 +22,7 @@ func (f *Foo) Construct(container IContainer) {
 }
 
 func TestSingleTon(t *testing.T) {
-	c := NewContainer()
+	c := New()
 	foo := &Foo{}
 	c.Set("foo", foo)
 	v1 := c.Get("foo")
@@ -33,7 +33,7 @@ func TestSingleTon(t *testing.T) {
 	}
 }
 func TestNotExistKey(t *testing.T) {
-	c := NewContainer()
+	c := New()
 	defer func() {
 		err := recover()
 		if err == nil {
@@ -51,7 +51,7 @@ func (d DemoServiceProvider) Register(container IContainer) {
 }
 
 func TestRegisterAndGet(t *testing.T) {
-	c := NewContainer()
+	c := New()
 	sp := &DemoServiceProvider{}
 	c.Register(sp)
 	v := c.Get("foo")
@@ -60,7 +60,7 @@ func TestRegisterAndGet(t *testing.T) {
 	}
 }
 func TestUnset(t *testing.T) {
-	c := NewContainer()
+	c := New()
 	c.Set("foo", "bar")
 	c.Unset("foo")
 	defer func() {
@@ -70,4 +70,22 @@ func TestUnset(t *testing.T) {
 		}
 	}()
 	_ = c.Get("foo")
+}
+
+type app struct {
+	Demo *demo `json:"demo"`
+}
+
+type demo struct {
+	P string
+}
+
+func TestUnmarshal(t *testing.T) {
+	c := New()
+	var apps app
+	c.Set("demo", &demo{P: "p"})
+	c.Unmarshal(&apps)
+	if apps.Demo.P != "p" {
+		t.Fatal("Expected Unmarshal")
+	}
 }
