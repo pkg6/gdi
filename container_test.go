@@ -59,6 +59,16 @@ func TestRegisterAndGet(t *testing.T) {
 		t.Fatal("Expected bar, got", v)
 	}
 }
+func TestHandler(t *testing.T) {
+	c := New()
+	c.Handler(func(container IContainer) {
+		container.Set("handler", "handler")
+	})
+	v := c.Get("handler")
+	if v != "handler" {
+		t.Fatal("Expected bar, got", v)
+	}
+}
 func TestUnset(t *testing.T) {
 	c := New()
 	c.Set("foo", "bar")

@@ -11,7 +11,7 @@ go get -u github.com/pkg6/gdi
 Create a container
 
 ```
-container := container.NewContainer()
+container := container.New()
 ```
 
 ##  Set a value
@@ -63,6 +63,16 @@ func (f *Foo) Construct(container IContainer) {
 
 foo := &Foo{}
 c.Set("foo", foo)
+```
+
+The service provider can then set values in the container
+
+## Register a HandlerFunc
+
+```
+c.Handler(func(container IContainer) {
+  container.Set("handler", "handler")
+})
 ```
 
 The service provider can then set values in the container
