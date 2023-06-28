@@ -1,6 +1,7 @@
 package gdi
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 )
@@ -12,6 +13,7 @@ type IContainer interface {
 	Exists(id string) bool
 	Unset(id string)
 	Raw(id string) (any, error)
+	Unmarshal(v any) error
 }
 
 type Container struct {
@@ -21,7 +23,7 @@ type Container struct {
 	frozen map[string]bool
 }
 
-func NewContainer() IContainer {
+func New() IContainer {
 	return &Container{
 		lock:   sync.RWMutex{},
 		frozen: map[string]bool{},
@@ -88,4 +90,12 @@ func (c *Container) Raw(id string) (any, error) {
 		panic(fmt.Errorf("identifier %s is not defined", id))
 	}
 	return rawVal, nil
+}
+
+func (c *Container) Unmarshal(v any) error {
+	marshal, err := json.Marshal(c.values)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(marshal, v)
 }
