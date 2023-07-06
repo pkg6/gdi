@@ -1,10 +1,13 @@
 package gdi
 
 import (
-	"encoding/json"
 	"fmt"
 	"sync"
 )
+
+//1. It is recommended to use github.com/mitchellh/mapstructure to render values to a structure
+//   go get github.com/mitchellh/mapstructure
+// 	 _= mapstructure.Decode(di.Values(), &App)
 
 type HandlerFunc func(container IContainer)
 
@@ -17,7 +20,6 @@ type IContainer interface {
 	Unset(id string)
 	Raw(id string) (any, error)
 	Values() map[string]any
-	Unmarshal(v any) error
 }
 
 type Container struct {
@@ -106,12 +108,4 @@ func (c *Container) Raw(id string) (any, error) {
 
 func (c *Container) Values() map[string]any {
 	return c.values
-}
-
-func (c *Container) Unmarshal(v any) error {
-	marshal, err := json.Marshal(c.Values())
-	if err != nil {
-		return err
-	}
-	return json.Unmarshal(marshal, v)
 }
