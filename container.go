@@ -16,6 +16,7 @@ type IContainer interface {
 	Exists(id string) bool
 	Unset(id string)
 	Raw(id string) (any, error)
+	Values() map[string]any
 	Unmarshal(v any) error
 }
 
@@ -103,8 +104,12 @@ func (c *Container) Raw(id string) (any, error) {
 	return rawVal, nil
 }
 
+func (c *Container) Values() map[string]any {
+	return c.values
+}
+
 func (c *Container) Unmarshal(v any) error {
-	marshal, err := json.Marshal(c.values)
+	marshal, err := json.Marshal(c.Values())
 	if err != nil {
 		return err
 	}
