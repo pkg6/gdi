@@ -6,18 +6,44 @@ import (
 	"sync"
 )
 
+const (
+	ErrNotFind = iota + 1
+	ErrExist
+)
+
 type HandlerFunc func(container IContainer)
 
 type IContainer interface {
 	Register(provider IServiceProvider) IContainer
 	Handler(handlers ...HandlerFunc) IContainer
-	Set(id string, value any)
-	Get(id string) any
+	Set(id string, value any) error
+	Get(id string) (any, error)
 	Exists(id string) bool
 	Unset(id string)
 	Raw(id string) (any, error)
 	Values() map[string]any
 	Decode(val any) error
+}
+
+type ContainerErr struct {
+	Index   int
+	ID      string
+	Message string
+}
+
+func NewErr(index int, ID string) *ContainerErr {
+	e := &ContainerErr{ID: ID, Index: index}
+	switch index {
+	case ErrNotFind:
+		e.Message = fmt.Sprintf("identifier %s is not defined", ID)
+	case ErrExist:
+		e.Message = fmt.Sprintf("cannot override frozen service %s", ID)
+	}
+	return e
+}
+
+func (e *ContainerErr) Error() string {
+	return e.Message
 }
 
 type Container struct {
@@ -49,32 +75,33 @@ func (c *Container) Handler(handlers ...HandlerFunc) IContainer {
 	return c
 }
 
-func (c *Container) Set(id string, value any) {
+func (c *Container) Set(id string, value any) error {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	if _, frozenExist := c.frozen[id]; frozenExist {
-		panic(fmt.Errorf("cannot override frozen service %s", id))
+		return NewErr(ErrExist, id)
 	}
 	c.values[id] = value
+	return nil
 }
 
-func (c *Container) Get(id string) any {
+func (c *Container) Get(id string) (any, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()
 	raw, keyExist := c.values[id]
 	if !keyExist {
-		panic(fmt.Errorf("identifier %s is not defined", id))
+		return nil, NewErr(ErrNotFind, id)
 	}
 	if object, ok := raw.(IObject); ok {
 		object.Construct(c)
-		return object
+		return object, nil
 	}
 	if handler, ok := raw.(func(IContainer) any); ok {
-		return handler(c)
+		return handler(c), nil
 	}
 	c.raw[id] = raw
 	c.frozen[id] = true
-	return c.raw[id]
+	return c.raw[id], nil
 }
 
 func (c *Container) Exists(id string) bool {
@@ -99,7 +126,7 @@ func (c *Container) Raw(id string) (any, error) {
 	defer c.lock.RUnlock()
 	rawVal, keyExist := c.values[id]
 	if !keyExist {
-		panic(fmt.Errorf("identifier %s is not defined", id))
+		return nil, NewErr(ErrNotFind, id)
 	}
 	return rawVal, nil
 }
