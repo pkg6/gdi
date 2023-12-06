@@ -23,7 +23,7 @@ container.Set("foo", "bar")
 ##  Get a value
 
 ```
-value := container.Get("foo") // value is "bar"
+value,err:= container.Get("foo") // value is "bar"
 ```
 
 ## Check if a value exists

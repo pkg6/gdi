@@ -10,10 +10,10 @@ func Register(provider IServiceProvider) IContainer {
 func Handler(handlers ...HandlerFunc) IContainer {
 	return di.Handler(handlers...)
 }
-func Set(id string, value any) {
-	di.Set(id, value)
+func Set(id string, value any) error {
+	return di.Set(id, value)
 }
-func Get(id string) any {
+func Get(id string) (any, error) {
 	return di.Get(id)
 }
 func Exists(id string) bool {
