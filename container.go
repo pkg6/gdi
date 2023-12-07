@@ -17,6 +17,7 @@ type IContainer interface {
 	Register(provider IServiceProvider) IContainer
 	Handler(handlers ...HandlerFunc) IContainer
 	Set(id string, value any) error
+	MustGet(id string) any
 	Get(id string) (any, error)
 	Exists(id string) bool
 	Unset(id string)
@@ -84,7 +85,13 @@ func (c *Container) Set(id string, value any) error {
 	c.values[id] = value
 	return nil
 }
-
+func (c *Container) MustGet(id string) any {
+	val, err := c.Get(id)
+	if err != nil {
+		panic(err)
+	}
+	return val
+}
 func (c *Container) Get(id string) (any, error) {
 	c.lock.RLock()
 	defer c.lock.RUnlock()

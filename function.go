@@ -13,6 +13,9 @@ func Handler(handlers ...HandlerFunc) IContainer {
 func Set(id string, value any) error {
 	return di.Set(id, value)
 }
+func MustGet(id string) any {
+	return di.MustGet(id)
+}
 func Get(id string) (any, error) {
 	return di.Get(id)
 }
